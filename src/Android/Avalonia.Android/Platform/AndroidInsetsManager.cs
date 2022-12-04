@@ -32,6 +32,11 @@ namespace Avalonia.Android.Platform
 
                 _displayEdgeToEdge = value;
 
+                if(Build.VERSION.SdkInt >= BuildVersionCodes.P)
+                {
+                    _activity.Window.Attributes.LayoutInDisplayCutoutMode = value ? LayoutInDisplayCutoutMode.ShortEdges : LayoutInDisplayCutoutMode.Default;
+                }
+
                 WindowCompat.SetDecorFitsSystemWindows(_activity.Window, !value);
             }
         }
@@ -65,7 +70,7 @@ namespace Avalonia.Android.Platform
             {
                 var renderScaling = _topLevel.RenderScaling;
 
-                var inset = insets.GetInsets((DisplayEdgeToEdge ? WindowInsetsCompat.Type.SystemBars() : 0 ) | WindowInsetsCompat.Type.Ime());
+                var inset = insets.GetInsets((DisplayEdgeToEdge ? WindowInsetsCompat.Type.SystemBars() : 0 ) | WindowInsetsCompat.Type.Ime() | WindowInsetsCompat.Type.DisplayCutout());
                 var navBarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars());
                 var imeInset = insets.GetInsets(WindowInsetsCompat.Type.Ime());
 
@@ -197,7 +202,7 @@ namespace Avalonia.Android.Platform
                     {
                         var renderScaling = InsetsManager._topLevel.RenderScaling;
 
-                        var inset = insets.GetInsets((InsetsManager.DisplayEdgeToEdge ? WindowInsetsCompat.Type.SystemBars() : 0) | WindowInsetsCompat.Type.Ime());
+                        var inset = insets.GetInsets((InsetsManager.DisplayEdgeToEdge ? WindowInsetsCompat.Type.SystemBars() : 0) | WindowInsetsCompat.Type.Ime() | WindowInsetsCompat.Type.DisplayCutout());
                         var navBarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars());
                         var imeInset = insets.GetInsets(WindowInsetsCompat.Type.Ime());
 

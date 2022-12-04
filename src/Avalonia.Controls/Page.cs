@@ -71,8 +71,8 @@ namespace Avalonia.Controls
                 {
                     _insetsManager.SafeAreaChanged += InsetsManager_SafeAreaChanged;
 
-                    _insetsManager.DisplayEdgeToEdge = WindowState == WindowState.Maximized;
                     _insetsManager.IsSystemBarVisible = WindowState != WindowState.FullScreen;
+                    _insetsManager.DisplayEdgeToEdge = WindowState == WindowState.Maximized || WindowState == WindowState.FullScreen;
                     _insetsManager.SystemBarTheme = SystemBarTheme;
 
                     if (UseSafeArea && _safeAreaBorder != null)
