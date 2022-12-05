@@ -556,7 +556,7 @@ namespace Avalonia.Controls
 
         public bool SetPage(Page page)
         {
-            return false;
+            return true;
         }
 
         ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>

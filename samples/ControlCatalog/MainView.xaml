@@ -180,6 +180,9 @@
       <TabItem Header="Window Customizations">
         <pages:WindowCustomizationsPage />
       </TabItem>
+      <TabItem Header="Window Insets" Name="WindowInsetsTab">
+        <pages:WindowInsetsPage />
+      </TabItem>
       <FlyoutBase.AttachedFlyout>
         <Flyout>
           <StackPanel Width="152" Spacing="8">

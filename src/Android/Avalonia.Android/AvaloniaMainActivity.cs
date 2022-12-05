@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Android.App;
 using Android.Content;
 using Android.Content.Res;
@@ -54,6 +55,17 @@ namespace Avalonia.Android
                 ViewContent = value;
                 if (View != null)
                     View.Content = value;
+            }
+        }
+
+        protected override void OnResume()
+        {
+            base.OnResume();
+
+            // Android only respects LayoutInDisplayCutoutMode value if set before window becomes visible. Changing the value after that point is then accepted, only if it's changed here first
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.P)
+            {
+                Window.Attributes.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
             }
         }
 

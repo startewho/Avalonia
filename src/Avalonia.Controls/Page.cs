@@ -2,12 +2,14 @@
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.VisualTree;
+using System;
+
 using static Avalonia.Controls.Platform.IInsetsManager;
 
 namespace Avalonia.Controls
 {
     [TemplatePart("PART_SafeAreaBorder", typeof(Border))]
-    public class Page : ContentControl
+    public class Page : ContentControl, IPageHost
     {
         public static readonly StyledProperty<SystemBarTheme?> SystemBarThemeProperty =
             AvaloniaProperty.Register<Page, SystemBarTheme?>(nameof(SystemBarTheme));
@@ -25,6 +27,9 @@ namespace Avalonia.Controls
         private Border? _safeAreaBorder;
         private bool _isTitleSet;
         private IPageHost? _host;
+        private IDisposable _safeAreaObservable;
+        private IDisposable _windowStateObservable;
+        private IDisposable _systemBarThemeObservable;
 
         public string? Title
         {
@@ -50,6 +55,8 @@ namespace Avalonia.Controls
             set => SetValue(SystemBarThemeProperty, value);
         }
 
+        public IInsetsManager? InsetsManager => null;
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -65,6 +72,11 @@ namespace Avalonia.Controls
 
             if (host != null)
             {
+                if(!host.SetPage(this))
+                {
+                    return;
+                }
+
                 _insetsManager = host.InsetsManager;
 
                 if (_insetsManager != null)
@@ -97,7 +109,7 @@ namespace Avalonia.Controls
 
         private void InsetsManager_SafeAreaChanged(object? sender, SafeAreaChangedArgs e)
         {
-            if (e != null && UseSafeArea && _safeAreaBorder != null)
+            if (e != null && _host is TopLevel && UseSafeArea && _safeAreaBorder != null)
             {
                 _safeAreaBorder.Padding = e.SafeAreaPadding;
             }
@@ -109,7 +121,7 @@ namespace Avalonia.Controls
 
             _safeAreaBorder = e.NameScope.Get<Border>("PART_SafeAreaBorder");
 
-            if(UseSafeArea && _safeAreaBorder != null && _insetsManager != null)
+            if(UseSafeArea && _host is TopLevel && _safeAreaBorder != null && _insetsManager != null)
             {
                 _safeAreaBorder.Padding = _insetsManager.GetSafeAreaPadding();
             }
@@ -121,7 +133,7 @@ namespace Avalonia.Controls
 
             if(change.Property == UseSafeAreaProperty && _safeAreaBorder != null && _insetsManager != null)
             {
-                _safeAreaBorder.Padding = UseSafeArea ? _insetsManager.GetSafeAreaPadding() : default;
+                _safeAreaBorder.Padding = UseSafeArea && _host is TopLevel? _insetsManager.GetSafeAreaPadding() : default;
             }
             else if(change.Property == WindowStateProperty)
             {
@@ -131,8 +143,8 @@ namespace Avalonia.Controls
                 }
                 else if(_insetsManager != null)
                 {
-                    _insetsManager.DisplayEdgeToEdge = WindowState == WindowState.Maximized;
                     _insetsManager.IsSystemBarVisible = WindowState != WindowState.FullScreen;
+                    _insetsManager.DisplayEdgeToEdge = WindowState == WindowState.Maximized || WindowState == WindowState.FullScreen;
                 }
             }
             else if(change.Property == TitleProperty && _host is Window window && !_isTitleSet)
@@ -143,6 +155,22 @@ namespace Avalonia.Controls
             {
                 _insetsManager.SystemBarTheme = SystemBarTheme;
             }
+        }
+
+        public bool SetPage(Page page)
+        {
+            _safeAreaObservable?.Dispose();
+            _windowStateObservable?.Dispose();
+            _systemBarThemeObservable?.Dispose();
+
+            if(page != null)
+            {
+                _safeAreaObservable = page.GetObservable(Page.UseSafeAreaProperty).Subscribe( x => UseSafeArea = x);
+                _windowStateObservable = page.GetObservable(Page.WindowStateProperty).Subscribe(x => WindowState = x);
+                _systemBarThemeObservable = page.GetObservable(Page.SystemBarThemeProperty).Subscribe(x => SystemBarTheme = x);
+            }
+
+            return true;
         }
     }
 }
