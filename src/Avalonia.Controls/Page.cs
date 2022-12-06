@@ -14,10 +14,10 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<SystemBarTheme?> SystemBarThemeProperty =
             AvaloniaProperty.Register<Page, SystemBarTheme?>(nameof(SystemBarTheme));
 
-        public static readonly StyledProperty<bool> UseSafeAreaProperty = 
+        public static readonly StyledProperty<bool> UseSafeAreaProperty =
             AvaloniaProperty.Register<Page, bool>(nameof(UseSafeArea));
 
-        public static readonly StyledProperty<string?> TitleProperty = 
+        public static readonly StyledProperty<string?> TitleProperty =
             AvaloniaProperty.Register<Page, string?>(nameof(Title));
 
         public static readonly StyledProperty<WindowState> WindowStateProperty =
@@ -27,9 +27,9 @@ namespace Avalonia.Controls
         private Border? _safeAreaBorder;
         private bool _isTitleSet;
         private IPageHost? _host;
-        private IDisposable _safeAreaObservable;
-        private IDisposable _windowStateObservable;
-        private IDisposable _systemBarThemeObservable;
+        private IDisposable? _safeAreaObservable;
+        private IDisposable? _windowStateObservable;
+        private IDisposable? _systemBarThemeObservable;
 
         public string? Title
         {
@@ -61,7 +61,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            if(_insetsManager != null)
+            if (_insetsManager != null)
             {
                 _insetsManager.SafeAreaChanged -= InsetsManager_SafeAreaChanged;
             }
@@ -72,7 +72,7 @@ namespace Avalonia.Controls
 
             if (host != null)
             {
-                if(!host.SetPage(this))
+                if (!host.SetPage(this))
                 {
                     return;
                 }
@@ -94,11 +94,11 @@ namespace Avalonia.Controls
                 }
             }
 
-            if(host is Window window)
+            if (host is Window window)
             {
                 _isTitleSet = window.IsSet(Window.TitleProperty);
 
-                if(!_isTitleSet && IsSet(TitleProperty))
+                if (!_isTitleSet && IsSet(TitleProperty))
                 {
                     window.Title = Title;
                 }
@@ -121,7 +121,7 @@ namespace Avalonia.Controls
 
             _safeAreaBorder = e.NameScope.Get<Border>("PART_SafeAreaBorder");
 
-            if(UseSafeArea && _host is TopLevel && _safeAreaBorder != null && _insetsManager != null)
+            if (UseSafeArea && _host is TopLevel && _safeAreaBorder != null && _insetsManager != null)
             {
                 _safeAreaBorder.Padding = _insetsManager.GetSafeAreaPadding();
             }
@@ -131,27 +131,27 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if(change.Property == UseSafeAreaProperty && _safeAreaBorder != null && _insetsManager != null)
+            if (change.Property == UseSafeAreaProperty && _safeAreaBorder != null && _insetsManager != null)
             {
-                _safeAreaBorder.Padding = UseSafeArea && _host is TopLevel? _insetsManager.GetSafeAreaPadding() : default;
+                _safeAreaBorder.Padding = UseSafeArea && _host is TopLevel ? _insetsManager.GetSafeAreaPadding() : default;
             }
-            else if(change.Property == WindowStateProperty)
+            else if (change.Property == WindowStateProperty)
             {
-                if(_host is Window window)
+                if (_host is Window window)
                 {
                     window.WindowState = WindowState;
                 }
-                else if(_insetsManager != null)
+                else if (_insetsManager != null)
                 {
                     _insetsManager.IsSystemBarVisible = WindowState != WindowState.FullScreen;
                     _insetsManager.DisplayEdgeToEdge = WindowState == WindowState.Maximized || WindowState == WindowState.FullScreen;
                 }
             }
-            else if(change.Property == TitleProperty && _host is Window window && !_isTitleSet)
+            else if (change.Property == TitleProperty && _host is Window window && !_isTitleSet)
             {
                 window.Title = Title;
             }
-            else if(change.Property == SystemBarThemeProperty && _insetsManager != null)
+            else if (change.Property == SystemBarThemeProperty && _insetsManager != null)
             {
                 _insetsManager.SystemBarTheme = SystemBarTheme;
             }
@@ -163,9 +163,9 @@ namespace Avalonia.Controls
             _windowStateObservable?.Dispose();
             _systemBarThemeObservable?.Dispose();
 
-            if(page != null)
+            if (page != null)
             {
-                _safeAreaObservable = page.GetObservable(Page.UseSafeAreaProperty).Subscribe( x => UseSafeArea = x);
+                _safeAreaObservable = page.GetObservable(Page.UseSafeAreaProperty).Subscribe(x => UseSafeArea = x);
                 _windowStateObservable = page.GetObservable(Page.WindowStateProperty).Subscribe(x => WindowState = x);
                 _systemBarThemeObservable = page.GetObservable(Page.SystemBarThemeProperty).Subscribe(x => SystemBarTheme = x);
             }
