@@ -10,9 +10,9 @@
     <TextBlock>System Bars</TextBlock>
     <RadioButton GroupName="SystemBars" IsChecked="{Binding SystemBarDefault}">Default</RadioButton>
     <RadioButton GroupName="SystemBars"
-                 IsChecked="{Binding SystemBarDrawBehind}">Draw Behind System Bars</RadioButton>
+                 IsChecked="{Binding SystemBarDrawBehind}">Draw Behind System Bars / Maximize (Android/Desktop)</RadioButton>
     <RadioButton GroupName="SystemBars"
-                 IsChecked="{Binding SystemBarHide}">Hide System Bars</RadioButton>
-    <CheckBox IsChecked="{Binding LightThemeSystemBar}">Light Themed System Bars</CheckBox>
+                 IsChecked="{Binding SystemBarHide}">Hide System Bars / Full Screen</RadioButton>
+    <CheckBox IsChecked="{Binding LightThemeSystemBar}">Light Themed System Bars (Android)</CheckBox>
   </StackPanel>
 </Page>
