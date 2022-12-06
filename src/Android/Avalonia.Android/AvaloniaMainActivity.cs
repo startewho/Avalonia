@@ -62,7 +62,7 @@ namespace Avalonia.Android
         {
             base.OnResume();
 
-            // Android only respects LayoutInDisplayCutoutMode value if set before window becomes visible. Changing the value after that point is then accepted, only if it's changed here first
+            // Android only respects LayoutInDisplayCutoutMode value if it has been set once before window becomes visible.
             if (Build.VERSION.SdkInt >= BuildVersionCodes.P)
             {
                 Window.Attributes.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;

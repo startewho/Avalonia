@@ -20,6 +20,8 @@ namespace Avalonia.Android.Platform
         private SystemBarTheme? _statusBarTheme;
         private bool? _isDefaultSystemBarLightTheme;
 
+        public event EventHandler<SafeAreaChangedArgs> SafeAreaChanged;
+
         public bool DisplayEdgeToEdge
         {
             get => _displayEdgeToEdge; 
@@ -35,8 +37,6 @@ namespace Avalonia.Android.Platform
                 WindowCompat.SetDecorFitsSystemWindows(_activity.Window, !value);
             }
         }
-
-        public event EventHandler<SafeAreaChangedArgs> SafeAreaChanged;
 
         public AndroidInsetsManager(AvaloniaMainActivity activity, TopLevelImpl topLevel)
         {
@@ -84,7 +84,7 @@ namespace Avalonia.Android.Platform
             return insets;
         }
 
-        private void NotifySafeAreaChanged(Thickness safeAreaPadding = default)
+        private void NotifySafeAreaChanged(Thickness safeAreaPadding)
         {
             SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(safeAreaPadding));
         }
@@ -92,11 +92,6 @@ namespace Avalonia.Android.Platform
         public void OnGlobalLayout()
         {
             NotifySafeAreaChanged(GetSafeAreaPadding());
-        }
-
-        public void SetSystemBarsVisibility(bool isVisible)
-        {
-            var insets = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
         }
 
         public SystemBarTheme? SystemBarTheme
@@ -109,7 +104,7 @@ namespace Avalonia.Android.Platform
 
                     return compat.AppearanceLightStatusBars ? Controls.Platform.SystemBarTheme.Light : Controls.Platform.SystemBarTheme.Dark;
                 }
-                catch (System.Exception _)
+                catch (Exception _)
                 {
                     return Controls.Platform.SystemBarTheme.Light;
                 }
