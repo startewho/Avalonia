@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Reflection;
 
 namespace Avalonia.Data.Core.Plugins
@@ -79,9 +79,9 @@ namespace Avalonia.Data.Core.Plugins
         {
             if (observableSelect == null)
             {
-                observableSelect = typeof(Observable).GetRuntimeMethods().First(x =>
+                observableSelect = Type.GetType("System.Reactive.Linq.Observable")?.GetRuntimeMethods().First(x =>
                 {
-                    if (x.Name == nameof(Observable.Select) &&
+                    if (x.Name == "Select" &&
                         x.ContainsGenericParameters &&
                         x.GetGenericArguments().Length == 2)
                     {
@@ -101,7 +101,7 @@ namespace Avalonia.Data.Core.Plugins
                 });
             }
 
-            return observableSelect;
+            return observableSelect ?? throw new InvalidOperationException("System.Reactive.Linq.Observable type was not found.");
         }
 
         private static object? Box<T>(T value) => (object?)value;

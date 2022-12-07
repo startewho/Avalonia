@@ -1,6 +1,5 @@
 using System;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data
 {
@@ -46,28 +45,39 @@ namespace Avalonia.Data
                         throw new InvalidOperationException("InstancedBinding does not contain an observable.");
                     return target.Bind(property, binding.Observable, binding.Priority);
                 case BindingMode.TwoWay:
+                    if (binding.Observable is null)
+                        throw new InvalidOperationException("InstancedBinding does not contain an observable.");
                     if (binding.Subject is null)
                         throw new InvalidOperationException("InstancedBinding does not contain a subject.");
                     return new TwoWayBindingDisposable(
-                        target.Bind(property, binding.Subject, binding.Priority),
+                        target.Bind(property, binding.Observable, binding.Priority),
                         target.GetObservable(property).Subscribe(binding.Subject));
                 case BindingMode.OneTime:
-                    var source = binding.Subject ?? binding.Observable;
-
-                    if (source != null)
+                    if (binding.Observable is {} source)
                     {
                         // Perf: Avoid allocating closure in the outer scope.
                         var targetCopy = target;
                         var propertyCopy = property;
                         var bindingCopy = binding;
+                        var valueSet = false;
+                        IDisposable? subscription = null;
 
-                        return source
-                            .Where(x => BindingNotification.ExtractValue(x) != AvaloniaProperty.UnsetValue)
-                            .Take(1)
-                            .Subscribe(x => targetCopy.SetValue(
-                                propertyCopy,
-                                BindingNotification.ExtractValue(x),
-                                bindingCopy.Priority));
+                        return subscription = source.Subscribe(new AnonymousObserver<object?>(x =>
+                        {
+                            if (!valueSet && BindingNotification.ExtractValue(x) != AvaloniaProperty.UnsetValue)
+                            {
+                                valueSet = true;
+                                targetCopy.SetValue(
+                                    propertyCopy,
+                                    BindingNotification.ExtractValue(x),
+                                    bindingCopy.Priority);
+                            }
+
+                            if (valueSet)
+                            {
+                                subscription?.Dispose();
+                            }
+                        }));
                     }
                     else
                     {
@@ -84,12 +94,25 @@ namespace Avalonia.Data
 
                     // Perf: Avoid allocating closure in the outer scope.
                     var bindingCopy = binding;
+                    var valueSet = false;
+                    object? lastValue = null;
 
-                    return Observable.CombineLatest(
-                        binding.Observable,
-                        target.GetObservable(property),
-                        (_, v) => v)
-                    .Subscribe(x => bindingCopy.Subject.OnNext(x));
+                    return new CompositeDisposable(2)
+                    {
+                        target.GetObservable(property).Subscribe(new AnonymousObserver<object?>(_ =>
+                        {
+                            if (valueSet)
+                            {
+                                bindingCopy.Subject.OnNext(lastValue);
+                            }
+                        })),
+                        target.GetObservable(property).Subscribe(new AnonymousObserver<object?>(val =>
+                        {
+                            valueSet = true;
+                            lastValue = val;
+                            bindingCopy.Subject.OnNext(lastValue);
+                        }))
+                    };
                 }
 
                 default:

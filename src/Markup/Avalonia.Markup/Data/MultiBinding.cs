@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Data.Converters;
 using Avalonia.Metadata;
 
@@ -87,6 +87,7 @@ namespace Avalonia.Data
 
             var input = children.Select(x => x?.Observable!)
                                 .Where(x => x is not null)
+                                .ToArray()
                                 .CombineLatest()
                                 .Select(x => ConvertValue(x, targetType, converter))
                                 .Where(x => x != BindingOperations.DoNothing);

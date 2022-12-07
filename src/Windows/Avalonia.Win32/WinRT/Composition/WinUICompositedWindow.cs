@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Numerics;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Threading;
 using Avalonia.MicroCom;
 using Avalonia.OpenGL;

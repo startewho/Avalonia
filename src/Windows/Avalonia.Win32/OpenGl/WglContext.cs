@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.OpenGL;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;

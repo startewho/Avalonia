@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Platform;
@@ -186,9 +186,9 @@ namespace Avalonia.Controls
             FrameSize = impl.FrameSize;
             
             this.GetObservable(PointerOverElementProperty)
-                .Select(
-                    x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
-                .Switch().Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformImpl));
+                .SelectMany(x => (x as InputElement)?.GetObservable(CursorProperty) ??
+                                 Observable.Empty<Cursor>())
+                .Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformImpl));
 
             if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
             {

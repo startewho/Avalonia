@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Threading;
 using Avalonia.OpenGL;
 namespace Avalonia.X11.Glx
