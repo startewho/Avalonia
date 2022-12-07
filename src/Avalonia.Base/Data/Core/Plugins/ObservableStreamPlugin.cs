@@ -12,6 +12,7 @@ namespace Avalonia.Data.Core.Plugins
     [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = TrimmingMessages.IgnoreNativeAotSupressWarningMessage)]
     public class ObservableStreamPlugin : IStreamPlugin
     {
+        private static MethodInfo? s_observableGeneric;
         static MethodInfo? observableSelect;
 
         /// <summary>
@@ -72,14 +73,16 @@ namespace Avalonia.Data.Core.Plugins
         [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
         private static MethodInfo GetObservableSelect(Type source)
         {
-            return GetObservableSelect().MakeGenericMethod(source, typeof(object));
+            return (s_observableGeneric ??= GetObservableSelect()).MakeGenericMethod(source, typeof(object));
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "System.Reactive.Linq.Observable", "System.Reactive")]
         private static MethodInfo GetObservableSelect()
         {
             if (observableSelect == null)
             {
-                observableSelect = Type.GetType("System.Reactive.Linq.Observable")?.GetRuntimeMethods().First(x =>
+                observableSelect = Assembly.Load("System.Reactive")?.GetType("System.Reactive.Linq.Observable", false)?.GetMethods().First(x =>
                 {
                     if (x.Name == "Select" &&
                         x.ContainsGenericParameters &&

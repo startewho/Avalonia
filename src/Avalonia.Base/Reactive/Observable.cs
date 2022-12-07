@@ -158,18 +158,15 @@ internal static class Observable
                 var observable = inputs[indexCopy];
                 {
                     subs.Add(observable
-                        .Subscribe(new AnonymousObserver<TInput?>(val =>
+                        .Subscribe(new AnonymousObserver<TInput>(val =>
                         {
                             try
                             {
-                                if (val is not null)
+                                arr[indexCopy] = val;
+                                hasValue[indexCopy] = true;
+                                if (hasValue.All(v => v))
                                 {
-                                    arr[indexCopy] = val;
-                                    hasValue[indexCopy] = true;
-                                    if (hasValue.All(v => v))
-                                    {
-                                        obs.OnNext(arr);
-                                    }
+                                    obs.OnNext(arr);
                                 }
                             }
                             catch (Exception ex)
