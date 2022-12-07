@@ -26,8 +26,9 @@ namespace Avalonia.Media
         /// </summary>
         public ScaleTransform()
         {
-            this.GetObservable(ScaleXProperty).Subscribe(_ => RaiseChanged());
-            this.GetObservable(ScaleYProperty).Subscribe(_ => RaiseChanged());
+            var raiseChangedObserver = new AnonymousObserver<double>(_ => RaiseChanged());
+            this.GetObservable(ScaleXProperty).Subscribe(raiseChangedObserver);
+            this.GetObservable(ScaleYProperty).Subscribe(raiseChangedObserver);
         }
 
         /// <summary>

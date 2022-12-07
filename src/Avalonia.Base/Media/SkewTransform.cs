@@ -26,8 +26,9 @@ namespace Avalonia.Media
         /// </summary>
         public SkewTransform()
         {
-            this.GetObservable(AngleXProperty).Subscribe(_ => RaiseChanged());
-            this.GetObservable(AngleYProperty).Subscribe(_ => RaiseChanged());
+            var raiseChangedObserver = new AnonymousObserver<double>(_ => RaiseChanged());
+            this.GetObservable(AngleXProperty).Subscribe(raiseChangedObserver);
+            this.GetObservable(AngleYProperty).Subscribe(raiseChangedObserver);
         }
 
         /// <summary>
