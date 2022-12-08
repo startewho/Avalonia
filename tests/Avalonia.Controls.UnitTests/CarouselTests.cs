@@ -52,9 +52,9 @@ namespace Avalonia.Controls.UnitTests
 
             Prepare(target);
 
-            Assert.Single(target.GetLogicalChildren());
+            Assert.Single(target.GetRealizedContainers());
 
-            var child = GetContainerTextBlock(target.GetLogicalChildren().Single());
+            var child = GetContainerTextBlock(target.GetRealizedContainers().Single());
 
             Assert.Equal("Foo", child.Text);
         }
@@ -78,9 +78,9 @@ namespace Avalonia.Controls.UnitTests
 
             Prepare(target);
 
-            Assert.Single(target.GetLogicalChildren());
+            Assert.Single(target.GetRealizedContainers());
 
-            var child = GetContainerTextBlock(target.GetLogicalChildren().Single());
+            var child = GetContainerTextBlock(target.GetRealizedContainers().Single());
 
             Assert.Equal("Foo", child.Text);
 
@@ -91,7 +91,7 @@ namespace Avalonia.Controls.UnitTests
             target.Items = newItems;
             Layout(target);
 
-            child = GetContainerTextBlock(target.GetLogicalChildren().Single());
+            child = GetContainerTextBlock(target.GetRealizedContainers().Single());
 
             Assert.Equal("Bar", child.Text);
         }
@@ -110,13 +110,13 @@ namespace Avalonia.Controls.UnitTests
             Prepare(target);
 
             Assert.Equal(-1, target.SelectedIndex);
-            Assert.Empty(target.GetLogicalChildren());
+            Assert.Empty(target.GetRealizedContainers());
 
             items.Add("Foo");
             Layout(target);
 
             Assert.Equal(0, target.SelectedIndex);
-            Assert.Single(target.GetLogicalChildren());
+            Assert.Single(target.GetRealizedContainers());
         }
 
         [Fact]
@@ -138,16 +138,16 @@ namespace Avalonia.Controls.UnitTests
 
             Prepare(target);
 
-            Assert.Equal(1, target.GetLogicalChildren().Count());
+            Assert.Equal(1, target.GetRealizedContainers().Count());
 
-            var child = GetContainerTextBlock(target.GetLogicalChildren().First());
+            var child = GetContainerTextBlock(target.GetRealizedContainers().First());
 
             Assert.Equal("Foo", child.Text);
 
             target.Items = null;
             Layout(target);
 
-            var numChildren = target.GetLogicalChildren().Count();
+            var numChildren = target.GetRealizedContainers().Count();
 
             Assert.Equal(-1, target.SelectedIndex);
         }
@@ -176,7 +176,6 @@ namespace Avalonia.Controls.UnitTests
 
             var child = GetContainerTextBlock(target.GetRealizedContainers().LastOrDefault());
 
-            Assert.IsType<TextBlock>(child);
             Assert.Equal("FooBar", child.Text);
         }
 
@@ -316,7 +315,6 @@ namespace Avalonia.Controls.UnitTests
         private static TextBlock GetContainerTextBlock(object control)
         {
             var contentPresenter = Assert.IsType<ContentPresenter>(control);
-            contentPresenter.UpdateChild();
             return Assert.IsType<TextBlock>(contentPresenter.Child);
         }
     }
