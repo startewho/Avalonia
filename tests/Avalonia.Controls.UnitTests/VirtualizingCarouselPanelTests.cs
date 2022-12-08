@@ -229,12 +229,6 @@ namespace Avalonia.Controls.UnitTests
                             [~ScrollContentPresenter.CanHorizontallyScrollProperty] = parent[~ScrollViewer.CanHorizontallyScrollProperty],
                             [~ScrollContentPresenter.CanVerticallyScrollProperty] = parent[~ScrollViewer.CanVerticallyScrollProperty],
                         }.RegisterInNameScope(scope),
-                        new ScrollBar
-                        {
-                            Name = "verticalScrollBar",
-                            [~ScrollBar.MaximumProperty] = parent[~ScrollViewer.VerticalScrollBarMaximumProperty],
-                            [~~ScrollBar.ValueProperty] = parent[~~ScrollViewer.VerticalScrollBarValueProperty],
-                        }
                     }
                 });
         }
