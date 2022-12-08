@@ -23,7 +23,7 @@ namespace Avalonia.Controls
         private static readonly ITemplate<Panel> PanelTemplate =
             new FuncTemplate<Panel>(() => new VirtualizingCarouselPanel());
 
-        private IScrollable? _scroll;
+        private IScrollable? _scroller;
 
         /// <summary>
         /// Initializes static members of the <see cref="Carousel"/> class.
@@ -65,20 +65,30 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            var result = base.ArrangeOverride(finalSize);
+
+            if (_scroller is not null)
+                _scroller.Offset = new(SelectedIndex, 0);
+
+            return result;
+        }
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-            _scroll = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
+            _scroller = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == SelectedIndexProperty && _scroll is not null)
+            if (change.Property == SelectedIndexProperty && _scroller is not null)
             {
                 var value = change.GetNewValue<int>();
-                _scroll.Offset = new(value, 0);
+                _scroller.Offset = new(value, 0);
             }
         }
     }
