@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Reactive.Operators;
+using Avalonia.Threading;
 
 namespace Avalonia.Reactive;
 
@@ -50,17 +52,17 @@ internal static class Observable
             return source.Subscribe(new AnonymousObserver<TSource>(
                 input =>
                 {
-                    bool produce;
+                    bool shouldRun;
                     try
                     {
-                        produce = predicate(input);
+                        shouldRun = predicate(input);
                     }
                     catch (Exception ex)
                     {
                         obs.OnError(ex);
                         return;
                     }
-                    if (produce)
+                    if (shouldRun)
                     {
                         obs.OnNext(input);
                     }
@@ -68,117 +70,23 @@ internal static class Observable
         });
     }
 
-    public static IObservable<TResult> SelectMany<TInput, TResult>(this IObservable<TInput> source, Func<TInput, IObservable<TResult>> selector)
+    public static IObservable<TSource> Switch<TSource>(
+        this IObservable<IObservable<TSource>> sources)
     {
-        return Create<TResult>(obs =>
-        {
-            IDisposable? parentDisposable = null;
-            var disposables = new CompositeDisposable(2);
-
-            disposables.Add(source
-                .Subscribe(new AnonymousObserver<TInput>(parent =>
-                {
-                    if (parentDisposable is not null)
-                    {
-                        parentDisposable.Dispose();
-                        disposables.Remove(parentDisposable);
-                    }
-                    
-                    var sub = selector(parent)
-                        .Subscribe(new AnonymousObserver<TResult>(obs.OnNext, obs.OnError, obs.OnCompleted));
-
-                    parentDisposable = sub;
-                    disposables.Add(sub);
-                }, obs.OnError, obs.OnCompleted)));
-
-            return disposables;
-        });
+        return new Switch<TSource>(sources);
     }
 
     public static IObservable<TResult> CombineLatest<TFirst, TSecond, TResult>(
         this IObservable<TFirst> first, IObservable<TSecond> second,
         Func<TFirst, TSecond, TResult> resultSelector)
     {
-        return Create<TResult>(obs =>
-        {
-            bool hasFirstValue = false, hasSecondValue = false;
-            TFirst? firstValue = default;
-            TSecond? secondValue = default;
-            return new CompositeDisposable(2)
-            {
-                first.Subscribe(new AnonymousObserver<TFirst>(
-                    val =>
-                    {
-                        firstValue = val;
-                        hasFirstValue = true;
-                        ProduceOnNext();
-                    })),
-                second.Subscribe(new AnonymousObserver<TSecond>(
-                    val =>
-                    {
-                        secondValue = val;
-                        hasSecondValue = true;
-                        ProduceOnNext();
-                    }))
-            };
-
-            void ProduceOnNext()
-            {
-                if (hasFirstValue && hasSecondValue)
-                {
-                    TResult result;
-                    try
-                    {
-                        result = resultSelector(firstValue!, secondValue!);
-                    }
-                    catch (Exception ex)
-                    {
-                        obs.OnError(ex);
-                        return;
-                    }
-                    obs.OnNext(result);
-                }
-            }
-        });
+        return new CombineLatest<TFirst, TSecond, TResult>(first, second, resultSelector);
     }
     
-    public static IObservable<TInput[]> CombineLatest<TInput>(
-        this IReadOnlyList<IObservable<TInput>> inputs)
+    public static IObservable<IList<TInput>> CombineLatest<TInput>(
+        this IEnumerable<IObservable<TInput>> inputs)
     {
-        return Create<TInput[]>(obs =>
-        {
-            var count = inputs.Count;
-            var hasValue = new bool[count];
-            var arr = new TInput[count];
-            var subs = new CompositeDisposable(count);
-
-            for (var index = 0; index < inputs.Count; index++)
-            {
-                var indexCopy = index;
-                var observable = inputs[indexCopy];
-                {
-                    subs.Add(observable
-                        .Subscribe(new AnonymousObserver<TInput>(val =>
-                        {
-                            try
-                            {
-                                arr[indexCopy] = val;
-                                hasValue[indexCopy] = true;
-                                if (hasValue.All(v => v))
-                                {
-                                    obs.OnNext(arr);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                obs.OnError(ex);
-                            }
-                        }, obs.OnError, obs.OnCompleted)));
-                }
-            }
-
-            return subs;
-        });
+        return new CombineLatest<TInput, IList<TInput>>(inputs, items => items);
     }
 
     public static IObservable<T> Skip<T>(this IObservable<T> source, int skipCount)
@@ -190,12 +98,17 @@ internal static class Observable
 
         return Create<T>(obs =>
         {
+            var remaining = skipCount;
             return source.Subscribe(new AnonymousObserver<T>(
                 input =>
                 {
-                    if (--skipCount == 0)
+                    if (remaining <= 0)
                     {
                         obs.OnNext(input);
+                    }
+                    else
+                    {
+                        remaining--;
                     }
                 }, obs.OnError, obs.OnCompleted));
         });
@@ -203,27 +116,23 @@ internal static class Observable
     
     public static IObservable<T> Take<T>(this IObservable<T> source, int takeCount)
     {
-        if (takeCount < 0)
-        {
-            throw new ArgumentException("Skip count must be bigger than zero", nameof(takeCount));
-        }
-
-        if (takeCount == 0)
+        if (takeCount <= 0)
         {
             return Empty<T>();
         }
 
         return Create<T>(obs =>
         {
+            var remaining = takeCount;
             return source.Subscribe(new AnonymousObserver<T>(
                 input =>
                 {
-                    if (takeCount > 0)
+                    if (remaining > 0)
                     {
-                        --takeCount;
+                        --remaining;
                         obs.OnNext(input);
 
-                        if (takeCount == 0)
+                        if (remaining == 0)
                         {
                             obs.OnCompleted();
                         }
@@ -244,18 +153,6 @@ internal static class Observable
         });
     }
     
-    public static IObservable<TEventArgs> FromEventPattern<TEventArgs>(Action<EventHandler<TEventArgs>> addHandler, Action<EventHandler<TEventArgs>> removeHandler)
-    {
-        return Create<TEventArgs>(observer =>
-        {
-            var handler = new Action<TEventArgs>(observer.OnNext);
-            var converted = new EventHandler<TEventArgs>((_, args) => handler(args));
-            addHandler(converted);
-
-            return Disposable.Create(() => removeHandler(converted));
-        });
-    }
-
     public static IObservable<T> Return<T>(T value)
     {
         return new ReturnImpl<T>(value);

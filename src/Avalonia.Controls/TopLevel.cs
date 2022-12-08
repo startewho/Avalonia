@@ -186,9 +186,9 @@ namespace Avalonia.Controls
             FrameSize = impl.FrameSize;
             
             this.GetObservable(PointerOverElementProperty)
-                .SelectMany(x => (x as InputElement)?.GetObservable(CursorProperty) ??
-                                 Observable.Empty<Cursor>())
-                .Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformImpl));
+                .Select(
+                    x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
+                .Switch().Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformImpl));
 
             if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
             {

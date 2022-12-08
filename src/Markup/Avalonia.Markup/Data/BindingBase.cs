@@ -245,8 +245,11 @@ namespace Avalonia.Data
             // inherit its DataContext.
 
             return target.GetObservable(Visual.VisualParentProperty)
-                .SelectMany(x => x?.GetObservable(StyledElement.DataContextProperty) ??
-                                 Observable.Return<object?>(null));
+                .Select(x =>
+                {
+                    return (x as AvaloniaObject)?.GetObservable(StyledElement.DataContextProperty) ??
+                           Observable.Return((object?)null);
+                }).Switch();
         }
 
         private class UpdateSignal : SingleSubscriberObservableBase<object>

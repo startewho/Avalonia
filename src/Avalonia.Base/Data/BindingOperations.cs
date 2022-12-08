@@ -59,25 +59,14 @@ namespace Avalonia.Data
                         var targetCopy = target;
                         var propertyCopy = property;
                         var bindingCopy = binding;
-                        var valueSet = false;
-                        IDisposable? subscription = null;
 
-                        return subscription = source.Subscribe(new AnonymousObserver<object?>(x =>
-                        {
-                            if (!valueSet && BindingNotification.ExtractValue(x) != AvaloniaProperty.UnsetValue)
-                            {
-                                valueSet = true;
-                                targetCopy.SetValue(
-                                    propertyCopy,
-                                    BindingNotification.ExtractValue(x),
-                                    bindingCopy.Priority);
-                            }
-
-                            if (valueSet)
-                            {
-                                subscription?.Dispose();
-                            }
-                        }));
+                        return source
+                            .Where(x => BindingNotification.ExtractValue(x) != AvaloniaProperty.UnsetValue)
+                            .Take(1)
+                            .Subscribe(x => targetCopy.SetValue(
+                                propertyCopy,
+                                BindingNotification.ExtractValue(x),
+                                bindingCopy.Priority));
                     }
                     else
                     {
@@ -94,25 +83,11 @@ namespace Avalonia.Data
 
                     // Perf: Avoid allocating closure in the outer scope.
                     var bindingCopy = binding;
-                    var valueSet = false;
-                    object? lastValue = null;
-
-                    return new CompositeDisposable(2)
-                    {
-                        target.GetObservable(property).Subscribe(new AnonymousObserver<object?>(_ =>
-                        {
-                            if (valueSet)
-                            {
-                                bindingCopy.Subject.OnNext(lastValue);
-                            }
-                        })),
-                        target.GetObservable(property).Subscribe(new AnonymousObserver<object?>(val =>
-                        {
-                            valueSet = true;
-                            lastValue = val;
-                            bindingCopy.Subject.OnNext(lastValue);
-                        }))
-                    };
+                    return Observable.CombineLatest(
+                            binding.Observable,
+                            target.GetObservable(property),
+                            (_, v) => v)
+                        .Subscribe(x => bindingCopy.Subject.OnNext(x));
                 }
 
                 default:
