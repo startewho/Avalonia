@@ -2,7 +2,6 @@ using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
-using Avalonia.Input;
 
 namespace Avalonia.Controls
 {
@@ -28,7 +27,9 @@ namespace Avalonia.Controls
         /// <see cref="Carousel"/>.
         /// </summary>
         private static readonly ITemplate<Panel> PanelTemplate =
-            new FuncTemplate<Panel>(() => new Panel());
+            new FuncTemplate<Panel>(() => new VirtualizingCarouselPanel());
+
+        private IScrollable? _scroll;
 
         /// <summary>
         /// Initializes static members of the <see cref="Carousel"/> class.
@@ -79,6 +80,23 @@ namespace Avalonia.Controls
             if (SelectedIndex > 0)
             {
                 --SelectedIndex;
+            }
+        }
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+            _scroll = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == SelectedIndexProperty && _scroll is not null)
+            {
+                var value = change.GetNewValue<int>();
+                _scroll.Offset = new(value, 0);
             }
         }
     }
