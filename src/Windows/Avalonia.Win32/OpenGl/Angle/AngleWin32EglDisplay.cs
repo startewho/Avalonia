@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -51,6 +51,7 @@ namespace Avalonia.Win32.OpenGl.Angle
         {
             var featureLevels = new[]
             {
+                D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_12_0,
                 D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_0,
                 D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_10_0,
                 D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_9_2,

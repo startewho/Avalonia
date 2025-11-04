@@ -28,7 +28,7 @@ namespace Avalonia.Direct2D1.Media
             _direct2DBitmap = d2DBitmap ?? throw new ArgumentNullException(nameof(d2DBitmap));
         }
 
-        public override Vector Dpi => new Vector(96, 96);
+        public override Vector Dpi =>_direct2DBitmap.DotsPerInch.ToAvaloniaVector();
         public override PixelSize PixelSize => _direct2DBitmap.PixelSize.ToAvalonia();
 
         public override void Dispose()

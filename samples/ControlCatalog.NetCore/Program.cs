@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -115,6 +115,7 @@ namespace ControlCatalog.NetCore
             {
                 builder.With(new Win32PlatformOptions()
                 {
+                    RenderingMode = [Win32RenderingMode.AngleEgl, Win32RenderingMode.Software],
                     CompositionMode = new [] { Win32CompositionMode.LowLatencyDxgiSwapChain }
                 });
                 return builder.StartWithClassicDesktopLifetime(args);
@@ -147,7 +148,7 @@ namespace ControlCatalog.NetCore
                 {
                     UseRegionDirtyRectClipping = true
                 })
-                .UseSkia()
+               .UseDirect2D1()
                 .WithInterFont()
                 .AfterSetup(builder =>
                 {

@@ -39,6 +39,7 @@
     <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+    <ProjectReference Include="..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
     <ProjectReference Include="..\SampleControls\ControlSamples.csproj" />
   </ItemGroup>

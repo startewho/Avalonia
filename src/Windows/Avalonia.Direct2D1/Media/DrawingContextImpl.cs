@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Avalonia.Media;
@@ -48,7 +48,6 @@ namespace Avalonia.Direct2D1.Media
             _renderTarget = renderTarget;
             _swapChain = swapChain;
             _finishedCallback = finishedCallback;
-
             if (_renderTarget is DeviceContext deviceContext)
             {
                 _deviceContext = deviceContext;
@@ -64,7 +63,7 @@ namespace Avalonia.Direct2D1.Media
             {
                 var scaling = _renderTarget.DotsPerInch.Width / 96;
                 if (!MathUtilities.AreClose(1, scaling))
-                    _postTransform = Matrix.CreateScale(1 / scaling, 1 / scaling);
+                    _postTransform = Matrix.CreateScale(1 /scaling, 1 / scaling);
             }
             
             _deviceContext.BeginDraw();
@@ -79,8 +78,7 @@ namespace Avalonia.Direct2D1.Media
             set
             {
                 _transform = value;
-                _deviceContext.Transform =
-                    (_postTransform.HasValue ? value * _postTransform.Value : value).ToDirect2D();
+               _deviceContext.Transform =(_postTransform.HasValue ? value * _postTransform.Value : value).ToDirect2D();
             }
         }
 

@@ -1,4 +1,4 @@
-using Avalonia.Compatibility;
+﻿using Avalonia.Compatibility;
 using Avalonia.Controls;
 using Avalonia.Logging;
 
@@ -18,7 +18,7 @@ namespace Avalonia
             if (OperatingSystemEx.IsWindows())
             {
                 LoadWin32(builder);
-                LoadSkia(builder);
+                //LoadSkia(builder);
             }
             else if(OperatingSystemEx.IsMacOS())
             {
